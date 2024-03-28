@@ -1,172 +1,277 @@
-
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 
-// PID controller gains
-#define Kp 1.0
-#define Ki 0.1
-#define Kd 0.01
+// Desired Angle
+volatile int desired_angle = 90;
 
-// WSF Constants
-#define WSF_SAMPLE_COUNT 7 
-const double WSF_CONST_LOOKUP_TABLE[7] = {100, 51.3417, 26.3597, 13.53353, 6.948345, 3.567399, 1.831564};
-#define WST_CONST_SUM 203.582238
+// Pins
+const int bit0 = 10;
+const int bit1 = 4;
+const int bit2 = 5;
+const int bit3 = 6;
+const int bit4 = 7;
+const int bit5 = 8;
+const int bit6 = 9;
+const int bit7 = 2;
 
-// Define maximum and minimum output values
-#define MAX_OUTPUT 100.0
-#define MIN_OUTPUT 100.0
+const int pwmLeftPin = 3;    // Counterclockwise
+const int pwmRightPin = 11;  // Clockwise
 
+// For decoding
+volatile int bit0_state;
+volatile int bit1_state;
+volatile int bit2_state;
+volatile int bit3_state;
+volatile int bit4_state;
+volatile int bit5_state;
+volatile int bit6_state;
+volatile int bit7_state;
 
-//pin def
-const int trigPin = 13;
-const int echoPin = 12;
-const int pwmPin1 = 8;
+const int MAX_DECODER_VALUE = 89;
 
-//WSF variables
-double raw_deriv_samples[WSF_SAMPLE_COUNT] = {};
-double filtered_derivative;
-int count = 0;
+volatile int decoder_deg_sign = 1;  // 1 is right 0 is left
 
+volatile int current_decoder_val = 0;
+volatile int previous_decoder_val = 0;
+volatile int rotations = 0;  // Total 90 deg rotations
 
-//variable def
-long duration;
-int distance;
-double desired_position = 100.0; // Desired position of the robotic arm
-double current_position;        // Current position of the robotic arm
-double integral = 0.0, derivative, previous_error = 0.0;
-double control_signal_output;
-int saturation = 0;
-int error;
-unsigned long prev_time = 0;
+volatile int absolute_angle = 0;
 
+// For PID
+volatile float k = 1.1;
+volatile float kp = 0.2;  // Increasing speeds up response and removes overshoot
+volatile float ki = 0.90;  // Increasing removes steady state error
+volatile float kd = 0.01;    // Increasing slows down response and removes spikes
+volatile float integral_max = 10;
+volatile float integral_min = -10;
 
-//Timer1 ISR variables
-double period_us1;
-volatile bool pwmState1 = false;
-volatile unsigned long previousMillis1 = 0;
-volatile unsigned long onTime_ms1;
-volatile unsigned long offTime_ms1;
-volatile float dutyCycle_fraction1;  // Duty cycle in percentage
-volatile unsigned long time_buffer_ms1 = offTime_ms1;
+volatile int error = 0;
+volatile float error_derivative = 0;
+volatile float error_integral = 0;
+volatile float error_previous = 0;
+volatile float pid_out = 0;
+volatile float new_error_integral;
+volatile float filtered_error_derivative = 0;
 
-void PID_Controller(int error, int* saturation);
+volatile long current_time = 0;
+volatile long previous_time = 0;
+volatile float delta_time = 0;
 
+// For WSF
+volatile float raw_deriv_samples[10] = { 0, 0, 0, 0, 0, 0, 0 };
+volatile int raw_angle_samples[10] = { 0, 0, 0, 0, 0, 0, 0 };
+const int WSF_SAMPLE_COUNT = 10;
+const float WSF_CONST_LOOKUP_TABLE[10] = { 0.36307, 0.2327935, 0.149263, 0.095704, 0.0613637, 0.0393452, 0.0252274, 0.0161753, 0.0103713, 0.006649864 };
+
+// Etc.
+volatile float sum = 0.0;
+
+volatile int motor_deg_sign = 1;
+
+volatile int motor_speed = 0;
 
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  pinMode(pwmPin1, OUTPUT);
 
-  period_us1 = 4000 + 120;
+  // Decoder Input Pins
+  pinMode(bit0, INPUT);
+  pinMode(bit1, INPUT);
+  pinMode(bit2, INPUT);
+  pinMode(bit3, INPUT);
+  pinMode(bit4, INPUT);
+  pinMode(bit5, INPUT);
+  pinMode(bit6, INPUT);
+  pinMode(bit7, INPUT);
 
+  // Output Pins
+  pinMode(pwmLeftPin, OUTPUT);
+  pinMode(pwmRightPin, OUTPUT);
 
-  // Configure Timer1 for PWM generation
-  noInterrupts();           // Disable interrupts during setup
-  TCCR1A = 0;               // Clear Timer1 control registers
+  // Setup Timer 1
+  noInterrupts();  // Disable all interrupts
+
+  // Timer1 Setup
+  TCCR1A = 0;
   TCCR1B = 0;
-  TCNT1  = 0;               // Timer1 counter starts from 0
-  OCR1A = (period_us1 * 16) / 256 - 1;  // Set PWM period
-  TCCR1B |= (1 << WGM12);   // Configure Timer1 for CTC mode
-  TCCR1B |= (1 << CS12);    // Set Timer1 prescaler to 256
-  TCCR1B |= (0 << CS11);
-  TCCR1B |= (0 << CS10);
-  TIMSK1 |= (1 << OCIE1A);  // Enable Timer1 compare match interrupt
-  interrupts();             // Enable interrupts
+  TCNT1 = 0;
+  OCR1A = 1599;              // Set for 1.25kHz Control Freq
+  TCCR1B |= (1 << WGM12);   // CTC mode
+  TCCR1B |= (1 << CS11);    // Prescaler 8
+  TIMSK1 |= (1 << OCIE1A);  // Enable Timer1 interrupt
+
+  // Timer2 Setup
+  TCCR2A = 0;  // Clear Timer2 control register A
+  TCCR2B = 0;  // Clear Timer2 control register B
+  TCNT2 = 0;   // Initialize counter value to 0
+
+  // Set to Fast PWM mode
+  TCCR2A |= (1 << WGM21) | (1 << WGM20);
+
+  // Set prescaler to 8 (or choose another suitable prescaler)
+  TCCR2B |= (1 << CS21);
+
+  // Non-inverting mode for both OC2A and OC2B
+  TCCR2A |= (1 << COM2A1) | (1 << COM2B1);
+
+  OCR2A = 0;
+  OCR2B = 0;
+
+  interrupts();  // Enable all interrupts
+
+  // Read initial decoder val
+  readDecoder();
+  previous_decoder_val = current_decoder_val;
+}
+
+void readDecoder() {
+  bit0_state = (PINB & (1 << PB2)) >> PB2;
+  bit1_state = (PIND & (1 << PD4)) >> PD4;
+  bit2_state = (PIND & (1 << PD5)) >> PD5;
+  bit3_state = (PIND & (1 << PD6)) >> PD6;
+  bit4_state = (PIND & (1 << PD7)) >> PD7;
+  bit5_state = (PINB & (1 << PB0)) >> PB0;
+  bit6_state = (PINB & (1 << PB1)) >> PB1;
+  bit7_state = (PIND & (1 << PD2)) >> PD2;
+
+  binaryToDecimal();
+
+  decoder_deg_sign = bit7_state;
+}
+
+void binaryToDecimal() {
+  current_decoder_val = bit6_state * 64 + bit5_state * 32 + bit4_state * 16 + bit3_state * 8 + bit2_state * 4 + bit1_state * 2 + bit0_state;
+}
+
+void getAbsolutePosition() {
+  readDecoder();
+
+  // Determine direction and handle overflows/underflows
+  if (decoder_deg_sign == 1) {  // clockwise
+    if (previous_decoder_val > current_decoder_val) {
+      // Handle overflow
+      rotations++;
+    }
+  } else {  // counterclockwise
+    if (previous_decoder_val < current_decoder_val) {
+      // Handle underflow
+      rotations--;
+    }
+  }
+
+  previous_decoder_val = current_decoder_val;
+
+  absolute_angle = rotations * (MAX_DECODER_VALUE + 1) + current_decoder_val;
+}
+
+void setMotorSpeed() {
+  // Get motor speed
+  motor_speed = fabs(pid_out);
+  if (motor_speed > 255) {
+    motor_speed = 255;
+  }
+
+  // Get motor direction
+  if (pid_out > 0) {  // motor needs to move clockwise
+    motor_deg_sign = 1;
+  } else {
+    // motor needs to move counterclockwise
+    motor_deg_sign = 0;
+  }
+
+  if (motor_deg_sign == 1) {
+    OCR2A = motor_speed;
+    OCR2B = 0;
+  } else {
+    OCR2A = 0;
+    OCR2B = motor_speed;
+  }
+}
+
+void pidControl() {
+  // time difference
+  current_time = micros();
+
+  delta_time = ((float)(current_time - previous_time))/1.0e6; // in seconds
+  previous_time = current_time;
+
+  // error
+  error = desired_angle - absolute_angle;  
+
+  // derivative
+  error_derivative = (error - error_previous) / (delta_time);
+
+  FDD_WSF_PID();
+
+  // integral
+  error_integral = error_integral + error * delta_time;
+
+  if(error_integral > integral_max){
+    error_integral = integral_max;
+  }
+  else if(error_integral < integral_min){
+    error_integral = integral_min;
+  }
+
+  // control signal
+  pid_out = k * (kp * error + kd * filtered_error_derivative + ki * error_integral);
 
 }
 
-// Timer ISR (Interrupt Service Routine)
 ISR(TIMER1_COMPA_vect) {
-  digitalWrite(pwmPin1, HIGH);
-  PID_Controller(error, &saturation);
-  if(saturation){
-    integral = 0.0;
-  }
+  // Get new desired position
 
-  OCR1A = (period_us1 * 16) / 256 - 1;
+  // Read from decoder and get absolute position
+  getAbsolutePosition();
 
-  digitalWrite(pwmPin1, LOW);
+  // PID Computation
+  pidControl();
 
+  // Set Motor Speed
+  setMotorSpeed();
 }
 
-double FDD_WSF(double raw_deriv_samples[]){
-  double sum = 0.0;
-  double filtered_Derivative;
-
-  for(int i = 0; i < WSF_SAMPLE_COUNT; i++){
-    sum += WSF_CONST_LOOKUP_TABLE[i] * raw_deriv_samples[i];
+void motorDirectionControl() {
+  if (motor_deg_sign == 1) {
+    PORTD &= ~(1 << PD3);  // Low
+    PORTB |= (1 << PB3);   // High
+  } else {
+    PORTB &= ~(1 << PB3);  // Low
+    PORTD |= (1 << PD3);   // High
   }
-  filtered_Derivative = sum / WST_CONST_SUM;
-
-  return filtered_Derivative;
-
-  
 }
 
+ISR(TIMER2_COMPA_vect) {
 
-//for testing purpose, we are going to pass in error
-void PID_Controller(int error, int* saturation){
+  // Motor Direction Control
+  motorDirectionControl();
 
-  // Calculate error
-  //error = desired_position - current_position;
+  // Store previous error
+  error_previous = error;
+}
 
-  unsigned long current_time = millis(); // Current time
-  double dt = (current_time - prev_time) / 1000.0; // Time difference in seconds
+void FDD_WSF_PID() {
+    sum = 0.0;
 
-  // Update integral term
-  integral += error * dt;
-
-  // Update derivative term
-  derivative = (error - previous_error) / dt;
-
-  raw_deriv_samples[count] = derivative;
-  count++;
-
-  if(count == WSF_SAMPLE_COUNT){ 
-    filtered_derivative = FDD_WSF(raw_deriv_samples);
-
-    // Calculate control signal
-    control_signal_output = Kp * error + Ki * integral + Kd * filtered_derivative;
-
-    // Limit control signal output (prevent integration winding)
-    if (control_signal_output > MAX_OUTPUT) {
-        *saturation = 1; // Set saturation flag
-        control_signal_output = MAX_OUTPUT;
-    } else if (control_signal_output < MIN_OUTPUT) {
-        *saturation = 1; // Set saturation flag
-        control_signal_output = MIN_OUTPUT;
-    } else {
-        *saturation = 0; // Clear saturation flag
+    // Shift all the derivative samples to the right by 1 index
+    for (int i = WSF_SAMPLE_COUNT - 1; i > 0; i--) {
+        raw_deriv_samples[i] = raw_deriv_samples[i - 1];
     }
 
-    //reset count
-    count = 0;
+    // Insert new derivative data to the first index
+    raw_deriv_samples[0] = error_derivative;
 
-  }
+    // Sum all of them
+    for (int i = 0; i < WSF_SAMPLE_COUNT; i++) {
+        sum += raw_deriv_samples[i] * WSF_CONST_LOOKUP_TABLE[i];
+    }
 
-  // Update previous error for derivative
-  previous_error = error;
-  prev_time = current_time;
-
-}
-
-int analog_to_period(double analog){
-  int period_ms = analog * 5;
-
-  return period_ms;
+    // Update filtered error derivative
+    filtered_error_derivative = sum;
 }
 
 void loop() {
 
-  for(int i = 0; i<1000; i++){
-    Serial.print("\n");
-    Serial.print("i is: ");
-    Serial.print(i);
-  }
-
-
+  Serial.println(filtered_error_derivative);
 }

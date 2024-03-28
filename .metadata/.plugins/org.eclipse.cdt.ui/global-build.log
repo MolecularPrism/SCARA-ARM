@@ -1,0 +1,322 @@
+17:31:24 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc "../Core/Src/stm32f1xx_hal_msp.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f1xx_hal_msp.d" -MT"Core/Src/stm32f1xx_hal_msp.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f1xx_hal_msp.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9456	     12	   1788	  11256	   2bf8	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:24:39 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc "../Core/Src/stm32f1xx_hal_msp.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f1xx_hal_msp.d" -MT"Core/Src/stm32f1xx_hal_msp.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f1xx_hal_msp.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9588	     12	   1788	  11388	   2c7c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:25:48 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9588	     12	   1788	  11388	   2c7c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:29:44 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9588	     12	   1788	  11388	   2c7c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:31:01 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9488	     12	   1788	  11288	   2c18	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:33:05 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc "../Core/Src/stm32f1xx_hal_msp.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f1xx_hal_msp.d" -MT"Core/Src/stm32f1xx_hal_msp.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f1xx_hal_msp.o"
+arm-none-eabi-gcc "../Core/Src/stm32f1xx_it.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f1xx_it.d" -MT"Core/Src/stm32f1xx_it.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f1xx_it.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9624	     12	   1788	  11424	   2ca0	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:38:18 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9604	     12	   1788	  11404	   2c8c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:39:48 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9684	     12	   1788	  11484	   2cdc	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:42:39 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9572	     12	   1788	  11372	   2c6c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:44:39 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9568	     12	   1788	  11368	   2c68	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:47:58 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c:371:6: error: redefinition of 'HAL_TIM_PeriodElapsedCallback'
+  371 | void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:358:6: note: previous definition of 'HAL_TIM_PeriodElapsedCallback' with type 'void(TIM_HandleTypeDef *)'
+  358 | void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+make: *** [Core/Src/subdir.mk:34: Core/Src/main.o] Error 1
+"make -j16 all" terminated with exit code 2. Build might be incomplete.
+18:54:21 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9604	     12	   1788	  11404	   2c8c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:55:27 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9548	     12	   1788	  11348	   2c54	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:55:47 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9604	     12	   1788	  11404	   2c8c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:56:13 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9568	     12	   1788	  11368	   2c68	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+18:57:05 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9608	     12	   1788	  11408	   2c90	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+19:22:04 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9548	     12	   1788	  11348	   2c54	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+19:23:02 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'HAL_TIM_PeriodElapsedCallback':
+../Core/Src/main.c:365:9: error: 'tim1' undeclared (first use in this function); did you mean 'htim1'?
+  365 |         tim1->CCR2 = 200;
+      |         ^~~~
+      |         htim1
+../Core/Src/main.c:365:9: note: each undeclared identifier is reported only once for each function it appears in
+make: *** [Core/Src/subdir.mk:34: Core/Src/main.o] Error 1
+"make -j16 all" terminated with exit code 2. Build might be incomplete.
+19:23:16 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9568	     12	   1788	  11368	   2c68	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+19:29:51 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9568	     12	   1788	  11368	   2c68	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+19:32:24 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9568	     12	   1788	  11368	   2c68	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+19:34:18 **** Incremental Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9572	     12	   1788	  11372	   2c6c	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
+11:30:36 **** Build of configuration Debug for project ELEC391_Project_Firmware ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc "../Core/Src/stm32f1xx_hal_msp.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f1xx_hal_msp.d" -MT"Core/Src/stm32f1xx_hal_msp.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f1xx_hal_msp.o"
+arm-none-eabi-gcc "../Core/Src/stm32f1xx_it.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stm32f1xx_it.d" -MT"Core/Src/stm32f1xx_it.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/stm32f1xx_it.o"
+arm-none-eabi-gcc -o "ELEC391_Project_Firmware.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\leest\OneDrive\Documents\School\SCARA_ARM\ELEC391_Project_Firmware\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ELEC391_Project_Firmware.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: ELEC391_Project_Firmware.elf
+ 
+arm-none-eabi-size  ELEC391_Project_Firmware.elf 
+arm-none-eabi-objdump -h -S ELEC391_Project_Firmware.elf  > "ELEC391_Project_Firmware.list"
+   text	   data	    bss	    dec	    hex	filename
+   9720	     12	   1788	  11520	   2d00	ELEC391_Project_Firmware.elf
+Finished building: default.size.stdout
+ 
+Finished building: ELEC391_Project_Firmware.list
+ 
