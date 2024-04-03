@@ -18,12 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <math.h>
-#include <stdlib.h>
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include "usbd_cdc_if.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +63,7 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
+//extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t len);
 
 /* USER CODE END PFP */
 
@@ -74,12 +76,19 @@ volatile float CF = 1, deltaTime = 0, error = 0, error_previous = 0, error_deriv
 const float integral_max = 10, integral_min = -10, desired_angle = 45;
 
 //Decoder Vars
-volatile float current_decoder_val = 0;
-volatile int bit0_state = 0, bit1_state = 0, bit2_state = 0, bit3_state = 0, bit4_state = 0, bit5_state = 0, bit6_state = 0;
+volatile float current_decoder_val_M1 = 0, current_angle = 0;
+GPIO_PinState bit3_one;
+GPIO_PinState bit2_one;
+GPIO_PinState bit1_one;
+GPIO_PinState bit0_one;
 
 //Motor Control Vars
 volatile float motor_speed = 0;
 volatile int motor_deg_sign = 0;
+
+//test var
+char* data = "hello\n";
+int test = 0;
 
 /* USER CODE END 0 */
 
@@ -91,6 +100,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
 
   /* USER CODE END 1 */
 
@@ -115,6 +125,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim3);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
@@ -124,6 +135,17 @@ int main(void)
 
   TIM1 -> CCR1 = 0;
   TIM2 -> CCR1 = 0;
+
+  TIM1 -> CCR2 = 0;
+  TIM2 -> CCR2 = 0;
+
+
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET); //NRST init on
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); //SEL off
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET); //CLK_OUT off
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET); //RST off
+
+
 
 
 
@@ -136,6 +158,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  //CDC_Transmit_FS((uint8_t*) data, strlen(data));
+	  test++;
+
+
   }
   /* USER CODE END 3 */
 }
@@ -157,10 +183,14 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 25;
+  RCC_OscInitStruct.PLL.PLLN = 192;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -170,12 +200,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -342,9 +372,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 999;
+  htim3.Init.Prescaler = 9;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 7199;
+  htim3.Init.Period = 47999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -384,13 +414,44 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pins : PB12 PB13 PB14 PB15
-                           PB3 PB4 PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15
-                          |GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|GPIO_PIN_3|GPIO_PIN_6|GPIO_PIN_7
+                          |GPIO_PIN_8, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PA3 PA4 PA5 PA6
+                           PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
+                          |GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB0 PB1 PB2 PB4
+                           PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4
+                          |GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB10 PB3 PB6 PB7
+                           PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_3|GPIO_PIN_6|GPIO_PIN_7
+                          |GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -398,8 +459,18 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void binaryToDecimal() {
-  current_decoder_val = bit6_state * 64 + bit5_state * 32 + bit4_state * 16 + bit3_state * 8 + bit2_state * 4 + bit1_state * 2 + bit0_state;
+int binaryToDecimal(int bit3, int bit2, int bit1, int bit0) {
+  return bit3 * 8 + bit2 * 4 + bit1 * 2 + bit0;
+}
+
+void readDecoder(){
+	bit3_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3);
+	bit2_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4);
+	bit1_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5);
+	bit0_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6);
+
+	current_decoder_val_M1 = binaryToDecimal(bit3_one, bit2_one, bit1_one, bit0_one);
+
 }
 
 void pidControl() {
@@ -429,35 +500,96 @@ void pidControl() {
 
 }
 
-void setMotorSpeed() {
-  // Get motor speed
-  motor_speed = fabs(pid_out);
-  if (motor_speed > 255) {
-    motor_speed = 255;
-  }
-
-  // Get motor direction
-  if (pid_out > 0) {  // motor needs to move clockwise
-    motor_deg_sign = 1;
-  } else {
-    // motor needs to move counterclockwise
-    motor_deg_sign = 0;
-  }
-
-  if (motor_deg_sign == 1) {
-    TIM1 -> CCR1 = motor_speed;
-    TIM1 -> CCR2 = 0;
-  } else {
-    TIM1 -> CCR2 = motor_speed;
-    TIM1 -> CCR1 = 0;
-
-  }
-}
+//void setMotorSpeed() {
+//  // Get motor speed
+//  motor_speed = fabs(pid_out);
+//  if (motor_speed > 255) {
+//    motor_speed = 255;
+//  }
+//
+//  // Get motor direction
+//  if (pid_out > 0) {  // motor needs to move clockwise
+//    motor_deg_sign = 1;
+//  } else {
+//    // motor needs to move counterclockwise
+//    motor_deg_sign = 0;
+//  }
+//
+//  if (motor_deg_sign == 1) {
+//    TIM1 -> CCR1 = motor_speed;
+//    TIM1 -> CCR2 = 0;
+//  } else {
+//    TIM1 -> CCR2 = motor_speed;
+//    TIM1 -> CCR1 = 0;
+//
+//  }
+//}
 
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    TIM1 -> CCR1++;
-    TIM2 -> CCR1++;
+	//CDC_Transmit_FS((uint8_t*) data, strlen(data));
+	TIM1->CCR1 = 255;
+
+
+	//test = TIM3 -> CNT;
+
+	//SEL on
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+
+//	for(int i = 0; i < 3; i++){
+//		//pass
+//	}
+
+	//RST on
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+
+//	for(int i = 0; i < 3; i++){
+//			//pass
+//		}
+
+
+	//NRST off
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+
+
+
+	//RST off
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+
+
+	//read decoder value
+	readDecoder();
+
+	if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5)){
+		current_angle += (current_decoder_val_M1 * 1.6666);
+	}
+	else{
+		current_angle -= (current_decoder_val_M1 * 1.6666);
+	}
+
+	//CLKOUT on
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+
+
+	//CLKOUT off
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+
+
+
+
+	//SEL off
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+
+	for(int i =0; i< 3; i++){
+		//delay
+	}
+
+	//NRST ON
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+	TIM1 -> CCR1 = 255;
+
+
 }
 
 /* USER CODE END 4 */
