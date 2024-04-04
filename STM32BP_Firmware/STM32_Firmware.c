@@ -34,10 +34,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define kp 0.2
-#define ki 0.9
-#define kd 0.01
-#define k 1.0
+#define kp 75
+#define ki 10
+#define kd 1.6
+#define k 1
 
 
 /* USER CODE END PD */
@@ -71,9 +71,9 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN 0 */
 
 // PID Control Vars
-volatile float CF = 1, deltaTime = 0, error = 0, error_previous = 0, error_derivative = 0, error_integral = 0, pid_out = 0, absolute_angle = 0;
+volatile float CF = 2000, deltaTime = 0, error = 0, error_previous = 0, error_derivative = 0, error_integral = 0, pid_out = 0;
 
-const float integral_max = 10, integral_min = -10, desired_angle = 45;
+const float integral_max = 10, integral_min = -10, desired_angle = 180;
 
 //Decoder Vars
 volatile float current_decoder_val_M1 = 0, current_angle = 0;
@@ -86,9 +86,16 @@ GPIO_PinState bit0_one;
 volatile float motor_speed = 0;
 volatile int motor_deg_sign = 0;
 
+//WSF Vars
+volatile float raw_deriv_samples[10] = { 0, 0, 0, 0, 0, 0, 0 };
+const int WSF_SAMPLE_COUNT = 10;
+const float WSF_CONST_LOOKUP_TABLE[10] = { 0.36307, 0.2327935, 0.149263, 0.095704, 0.0613637, 0.0393452, 0.0252274, 0.0161753, 0.0103713, 0.006649864 };
+volatile float filtered_error_derivative = 0.0;
+
 //test var
 char* data = "hello\n";
 int test = 0;
+volatile float max_angle = 0.0;
 
 /* USER CODE END 0 */
 
@@ -159,7 +166,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  //CDC_Transmit_FS((uint8_t*) data, strlen(data));
-	  test++;
+
 
 
   }
@@ -302,7 +309,6 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -315,15 +321,6 @@ static void MX_TIM2_Init(void)
   htim2.Init.Period = 255;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -374,7 +371,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 9;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 47999;
+  htim3.Init.Period = 4799;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -473,17 +470,37 @@ void readDecoder(){
 
 }
 
+void FDD_WSF_PID() {
+    float sum = 0.0;
+
+    // Shift all the derivative samples to the right by 1 index
+    for (int i = WSF_SAMPLE_COUNT - 1; i > 0; i--) {
+        raw_deriv_samples[i] = raw_deriv_samples[i - 1];
+    }
+
+    // Insert new derivative data to the first index
+    raw_deriv_samples[0] = error_derivative;
+
+    // Sum all of them
+    for (int i = 0; i < WSF_SAMPLE_COUNT; i++) {
+        sum += raw_deriv_samples[i] * WSF_CONST_LOOKUP_TABLE[i];
+    }
+
+    // Update filtered error derivative
+    filtered_error_derivative = sum;
+}
+
 void pidControl() {
 
   deltaTime = 1.0/CF;
 
   // error
-  error = desired_angle - absolute_angle;
+  error = desired_angle - current_angle;
 
   // derivative
   error_derivative = (error - error_previous) / (deltaTime);
 
-  //FDD_WSF_PID();
+  FDD_WSF_PID();
 
   // integral
   error_integral = error_integral + error * deltaTime;
@@ -496,69 +513,107 @@ void pidControl() {
   }
 
   // control signal
-  pid_out = k * (kp * error + kd * error_derivative + ki * error_integral);
+  pid_out = k * (kp * error + kd * filtered_error_derivative + ki * error_integral);
 
 }
 
-//void setMotorSpeed() {
-//  // Get motor speed
-//  motor_speed = fabs(pid_out);
-//  if (motor_speed > 255) {
-//    motor_speed = 255;
-//  }
-//
-//  // Get motor direction
-//  if (pid_out > 0) {  // motor needs to move clockwise
-//    motor_deg_sign = 1;
-//  } else {
-//    // motor needs to move counterclockwise
-//    motor_deg_sign = 0;
-//  }
-//
-//  if (motor_deg_sign == 1) {
-//    TIM1 -> CCR1 = motor_speed;
-//    TIM1 -> CCR2 = 0;
-//  } else {
-//    TIM1 -> CCR2 = motor_speed;
-//    TIM1 -> CCR1 = 0;
-//
-//  }
-//}
+void setMotorSpeed() {
+  // Get motor speed
+  motor_speed = fabs(pid_out);
+  if (motor_speed > 255) {
+    motor_speed = 255;
+  }
+
+  // Get motor direction
+  if (pid_out > 0) {  // motor needs to move clockwise
+    motor_deg_sign = 1;
+  } else {
+    // motor needs to move counterclockwise
+    motor_deg_sign = 0;
+  }
+
+  if (motor_deg_sign == 1) {
+    TIM1 -> CCR1 = 0;
+    TIM1 -> CCR2 = motor_speed;
+  } else {
+    TIM1 -> CCR2 = 0;
+    TIM1 -> CCR1 = motor_speed;
+
+  }
+}
+
 
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	//CDC_Transmit_FS((uint8_t*) data, strlen(data));
-	TIM1->CCR1 = 255;
 
-
-	//test = TIM3 -> CNT;
 
 	//SEL on
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
 
-//	for(int i = 0; i < 3; i++){
-//		//pass
-//	}
+	// Delay loop for approximately 1 microsecond
+	for (volatile uint32_t i = 0; i < 10; ++i) {
+		__NOP(); // No Operation assembly instruction
+	}
+
+
 
 	//RST on
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
 
-//	for(int i = 0; i < 3; i++){
-//			//pass
-//		}
+	// Delay loop for approximately 1 microsecond
+		for (volatile uint32_t i = 0; i < 10; ++i) {
+			__NOP(); // No Operation assembly instruction
+		}
+
 
 
 	//NRST off
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+
+	// Delay loop for approximately 1 microsecond
+		for (volatile uint32_t i = 0; i < 2; ++i) {
+			__NOP(); // No Operation assembly instruction
+		}
+
+
 
 
 
 	//RST off
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 
+	// Delay loop for approximately 1 microsecond
+		for (volatile uint32_t i = 0; i < 10; ++i) {
+			__NOP(); // No Operation assembly instruction
+		}
+
 
 	//read decoder value
 	readDecoder();
+
+	//NRST ON
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+	// Delay loop for approximately 1 microsecond
+	for (volatile uint32_t i = 0; i < 2; ++i) {
+		__NOP(); // No Operation assembly instruction
+	}
+
+	//CLKOUT ON
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+
+	//SEL OFF
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+
+	// Delay loop for approximately 1 microsecond
+	for (volatile uint32_t i = 0; i < 10; ++i) {
+		__NOP(); // No Operation assembly instruction
+	}
+
+	//CLKOUT OFF
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+
+
 
 	if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5)){
 		current_angle += (current_decoder_val_M1 * 1.6666);
@@ -567,27 +622,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		current_angle -= (current_decoder_val_M1 * 1.6666);
 	}
 
-	//CLKOUT on
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
-
-
-	//CLKOUT off
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
-
-
-
-
-	//SEL off
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
-
-	for(int i =0; i< 3; i++){
-		//delay
+	if(current_angle >= max_angle){
+		max_angle = current_angle;
 	}
 
-	//NRST ON
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+	pidControl();
 
-	TIM1 -> CCR1 = 255;
+	setMotorSpeed();
+
 
 
 }
