@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "usbd_cdc_if.h"
 #include "string.h"
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,10 +35,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define kp 75
-#define ki 10
-#define kd 1.6
-#define k 1
+#define kp 19
+#define ki 0.8
+#define kd 0.5
+#define k 1.1
 
 
 /* USER CODE END PD */
@@ -71,31 +72,30 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN 0 */
 
 // PID Control Vars
-volatile float CF = 2000, deltaTime = 0, error = 0, error_previous = 0, error_derivative = 0, error_integral = 0, pid_out = 0;
+volatile float CF = 2000, deltaTime = 0, error_previous_x = 0, error_previous_y = 0, error_integral_x = 0, error_integral_y = 0, pid_out_x = 0, pid_out_y = 0;
 
-const float integral_max = 10, integral_min = -10, desired_angle = 180;
+const float integral_max = 2, integral_min = -2, desired_angle_x = -180, desired_angle_y = -90;
 
 //Decoder Vars
-volatile float current_decoder_val_M1 = 0, current_angle = 0;
-GPIO_PinState bit3_one;
-GPIO_PinState bit2_one;
-GPIO_PinState bit1_one;
-GPIO_PinState bit0_one;
+volatile float current_decoder_val_M1 = 0, current_decoder_val_M2 = 0, current_angle_x = 0, current_angle_y = 0;
 
-//Motor Control Vars
-volatile float motor_speed = 0;
-volatile int motor_deg_sign = 0;
+
+// Drawing Shape Vars
+volatile float x_coord = 1, y_coord = 1;
+volatile float wall_distance = 1;
+volatile float current_angle_rad = 0;
 
 //WSF Vars
-volatile float raw_deriv_samples[10] = { 0, 0, 0, 0, 0, 0, 0 };
+volatile float raw_deriv_samples_x[10] = { 0, 0, 0, 0, 0, 0, 0 };
+volatile float raw_deriv_samples_y[10] = { 0, 0, 0, 0, 0, 0, 0 };
 const int WSF_SAMPLE_COUNT = 10;
 const float WSF_CONST_LOOKUP_TABLE[10] = { 0.36307, 0.2327935, 0.149263, 0.095704, 0.0613637, 0.0393452, 0.0252274, 0.0161753, 0.0103713, 0.006649864 };
-volatile float filtered_error_derivative = 0.0;
 
 //test var
 char* data = "hello\n";
 int test = 0;
 volatile float max_angle = 0.0;
+volatile float current_angle_test = 0;
 
 /* USER CODE END 0 */
 
@@ -461,16 +461,24 @@ int binaryToDecimal(int bit3, int bit2, int bit1, int bit0) {
 }
 
 void readDecoder(){
-	bit3_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3);
-	bit2_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4);
-	bit1_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5);
-	bit0_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6);
+
+	GPIO_PinState bit3_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3);
+	GPIO_PinState bit2_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4);
+	GPIO_PinState bit1_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5);
+	GPIO_PinState bit0_one = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6);
+
+	GPIO_PinState bit3_two = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7);
+	GPIO_PinState bit2_two = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0);
+	GPIO_PinState bit1_two = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1);
+	GPIO_PinState bit0_two = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
 
 	current_decoder_val_M1 = binaryToDecimal(bit3_one, bit2_one, bit1_one, bit0_one);
+	current_decoder_val_M2 = binaryToDecimal(bit3_two, bit2_two, bit1_two, bit0_two);
+
 
 }
 
-void FDD_WSF_PID() {
+float FDD_WSF_PID(volatile float* raw_deriv_samples, float error_derivative) {
     float sum = 0.0;
 
     // Shift all the derivative samples to the right by 1 index
@@ -487,62 +495,76 @@ void FDD_WSF_PID() {
     }
 
     // Update filtered error derivative
-    filtered_error_derivative = sum;
+    return sum;
 }
 
-void pidControl() {
+float pidControl(const float desired_angle, volatile float *error_integral, volatile float current_angle, volatile float *error_previous, volatile float* raw_derivative_samples) {
 
   deltaTime = 1.0/CF;
 
   // error
-  error = desired_angle - current_angle;
+  float error = desired_angle - current_angle;
 
   // derivative
-  error_derivative = (error - error_previous) / (deltaTime);
+  float error_derivative = (error - *error_previous) / (deltaTime);
 
-  FDD_WSF_PID();
+  float filtered_error_derivative = FDD_WSF_PID(raw_derivative_samples, error_derivative);
 
   // integral
-  error_integral = error_integral + error * deltaTime;
+  *error_integral = *error_integral + error * deltaTime;
 
-  if(error_integral > integral_max){
-    error_integral = integral_max;
+  if(*error_integral > integral_max){
+    *error_integral = integral_max;
   }
-  else if(error_integral < integral_min){
-    error_integral = integral_min;
+  else if(*error_integral < integral_min){
+    *error_integral = integral_min;
   }
+
+  *error_previous = error;
 
   // control signal
-  pid_out = k * (kp * error + kd * filtered_error_derivative + ki * error_integral);
+  return k * (kp * error + kd * filtered_error_derivative + ki * (*error_integral));
+
 
 }
 
 void setMotorSpeed() {
   // Get motor speed
-  motor_speed = fabs(pid_out);
-  if (motor_speed > 255) {
-    motor_speed = 255;
+  int motor_speed_x = fabs(pid_out_x);
+  int motor_speed_y = fabs(pid_out_y);
+
+  if (motor_speed_x > 255) {
+    motor_speed_x = 255;
+  }
+
+  if (motor_speed_y > 255){
+	  motor_speed_y = 255;
   }
 
   // Get motor direction
-  if (pid_out > 0) {  // motor needs to move clockwise
-    motor_deg_sign = 1;
+  if (pid_out_x > 0) {  // motor needs to move clockwise
+	  TIM1 -> CCR1 = 0;
+	  TIM1 -> CCR2 = motor_speed_x;
   } else {
-    // motor needs to move counterclockwise
-    motor_deg_sign = 0;
+	  TIM1 -> CCR2 = 0;
+	  TIM1 -> CCR1 = motor_speed_x;
   }
 
-  if (motor_deg_sign == 1) {
-    TIM1 -> CCR1 = 0;
-    TIM1 -> CCR2 = motor_speed;
-  } else {
-    TIM1 -> CCR2 = 0;
-    TIM1 -> CCR1 = motor_speed;
+  if (pid_out_y > 0) {  // motor needs to move clockwise
+	  TIM2 -> CCR1 = 0;
+	  TIM2 -> CCR2 = motor_speed_y;
+    } else {
+    	TIM2 -> CCR2 = 0;
+    	TIM2 -> CCR1 = motor_speed_y;
+    }
 
-  }
 }
 
+void convertAngleToXY() {
+	current_angle_rad = atan(x_coord/wall_distance);
 
+	current_angle_test = current_angle_rad * M_PI/180;
+}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
@@ -616,21 +638,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 
 	if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5)){
-		current_angle += (current_decoder_val_M1 * 1.6666);
+		current_angle_x += (current_decoder_val_M1 * 1.6666);
 	}
 	else{
-		current_angle -= (current_decoder_val_M1 * 1.6666);
+		current_angle_x -= (current_decoder_val_M1 * 1.6666);
 	}
 
-	if(current_angle >= max_angle){
-		max_angle = current_angle;
+	if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4)){
+		current_angle_y += (current_decoder_val_M2 * 1.6666);
+	}
+	else{
+		current_angle_y -= (current_decoder_val_M2 * 1.6666);
 	}
 
-	pidControl();
+
+	pid_out_x = pidControl(desired_angle_x, &error_integral_x ,current_angle_x, &error_previous_x, raw_deriv_samples_x);
+	pid_out_y = pidControl(desired_angle_y, &error_integral_y, current_angle_y, &error_previous_y, raw_deriv_samples_y);
 
 	setMotorSpeed();
 
-
+	convertAngleToXY();
 
 }
 
