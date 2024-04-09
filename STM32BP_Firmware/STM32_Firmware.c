@@ -71,10 +71,15 @@ static void MX_TIM3_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+//Preset Shape Coordinates
+const float square_y[4] = {0,0,10,10}; //{0,0},{10,0},{10,10},{0,10}
+const float square_x[4] = {0,10,10,0};
+
 // PID Control Vars
 volatile float CF = 2000, deltaTime = 0, error_previous_x = 0, error_previous_y = 0, error_integral_x = 0, error_integral_y = 0, pid_out_x = 0, pid_out_y = 0;
 
-const float integral_max = 2, integral_min = -2, desired_angle_x = -180, desired_angle_y = -90;
+const float integral_max = 2, integral_min = -2;
+volatile float desired_angle_x = 20, desired_angle_y = 20;
 
 //Decoder Vars
 volatile float current_decoder_val_M1 = 0, current_decoder_val_M2 = 0, current_angle_x = 0, current_angle_y = 0;
@@ -91,11 +96,17 @@ volatile float raw_deriv_samples_y[10] = { 0, 0, 0, 0, 0, 0, 0 };
 const int WSF_SAMPLE_COUNT = 10;
 const float WSF_CONST_LOOKUP_TABLE[10] = { 0.36307, 0.2327935, 0.149263, 0.095704, 0.0613637, 0.0393452, 0.0252274, 0.0161753, 0.0103713, 0.006649864 };
 
+//Homing Vars
+volatile int is_limitSW_x = 0, is_limitSW_y = 0;
+
 //test var
 char* data = "hello\n";
 int test = 0;
 volatile float max_angle = 0.0;
 volatile float current_angle_test = 0;
+
+//prototype
+void limit_switch_trigger();
 
 /* USER CODE END 0 */
 
@@ -165,7 +176,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  //CDC_Transmit_FS((uint8_t*) data, strlen(data));
+
+	//limit_switch_trigger();
+
+
+
+
 
 
 
@@ -412,49 +428,38 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|GPIO_PIN_3|GPIO_PIN_6|GPIO_PIN_7
-                          |GPIO_PIN_8, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PA3 PA4 PA5 PA6
-                           PA7 */
+                           PA7 PA15 */
   GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
-                          |GPIO_PIN_7;
+                          |GPIO_PIN_7|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB2 PB4
-                           PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4
-                          |GPIO_PIN_5;
+  /*Configure GPIO pins : PB0 PB1 PB2 PB3
+                           PB4 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB10 PB3 PB6 PB7
-                           PB8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_3|GPIO_PIN_6|GPIO_PIN_7
-                          |GPIO_PIN_8;
+  /*Configure GPIO pins : PB10 PB6 PB7 PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+
+
 
 int binaryToDecimal(int bit3, int bit2, int bit1, int bit0) {
   return bit3 * 8 + bit2 * 4 + bit1 * 2 + bit0;
@@ -476,6 +481,80 @@ void readDecoder(){
 	current_decoder_val_M2 = binaryToDecimal(bit3_two, bit2_two, bit1_two, bit0_two);
 
 
+}
+
+void execute_reset_seq(){
+	//SEL on
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+
+		// Delay loop for approximately 1 microsecond
+		for (volatile uint32_t i = 0; i < 10; ++i) {
+			__NOP(); // No Operation assembly instruction
+		}
+
+
+
+		//RST on
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+
+		// Delay loop for approximately 1 microsecond
+			for (volatile uint32_t i = 0; i < 10; ++i) {
+				__NOP(); // No Operation assembly instruction
+			}
+
+		//NRST off
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+
+		// Delay loop for approximately 0.2 microsecond
+			for (volatile uint32_t i = 0; i < 2; ++i) {
+				__NOP(); // No Operation assembly instruction
+			}
+
+
+		//RST off
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+
+		// Delay loop for approximately 1 microsecond
+			for (volatile uint32_t i = 0; i < 10; ++i) {
+				__NOP(); // No Operation assembly instruction
+			}
+
+
+		//read decoder value
+		readDecoder();
+
+		//NRST ON
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+		// Delay loop for approximately 0.2 microsecond
+		for (volatile uint32_t i = 0; i < 2; ++i) {
+			__NOP(); // No Operation assembly instruction
+		}
+
+		//CLKOUT ON
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+
+		//SEL OFF
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+
+		// Delay loop for approximately 1 microsecond
+		for (volatile uint32_t i = 0; i < 10; ++i) {
+			__NOP(); // No Operation assembly instruction
+		}
+
+		//CLKOUT OFF
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+}
+
+void limit_switch_trigger(){
+	if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)){
+		is_limitSW_x = 1;
+
+	}
+
+	if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3)){
+		is_limitSW_y = 1;
+	}
 }
 
 float FDD_WSF_PID(volatile float* raw_deriv_samples, float error_derivative) {
@@ -565,77 +644,33 @@ void convertAngleToXY() {
 
 	current_angle_test = current_angle_rad * M_PI/180;
 }
+int count = 0;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
+	if(!is_limitSW_x && !is_limitSW_y){
+		desired_angle_x = square_x[count];
+		desired_angle_y = square_y[count];
+	}
+	else{
+		desired_angle_x = 0;
+		desired_angle_y = 0;
+	}
 
-	//SEL on
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
-
-	// Delay loop for approximately 1 microsecond
-	for (volatile uint32_t i = 0; i < 10; ++i) {
-		__NOP(); // No Operation assembly instruction
+	if(count > 3){
+		count = 0;
 	}
 
 
-
-	//RST on
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
-
-	// Delay loop for approximately 1 microsecond
-		for (volatile uint32_t i = 0; i < 10; ++i) {
-			__NOP(); // No Operation assembly instruction
+	if(fabs(desired_angle_y - current_angle_y) < 0.5){
+		if(fabs(desired_angle_x - current_angle_x) < 0.5){
+			count++;
 		}
 
-
-
-	//NRST off
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-
-	// Delay loop for approximately 1 microsecond
-		for (volatile uint32_t i = 0; i < 2; ++i) {
-			__NOP(); // No Operation assembly instruction
-		}
-
-
-
-
-
-	//RST off
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
-
-	// Delay loop for approximately 1 microsecond
-		for (volatile uint32_t i = 0; i < 10; ++i) {
-			__NOP(); // No Operation assembly instruction
-		}
-
-
-	//read decoder value
-	readDecoder();
-
-	//NRST ON
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
-
-	// Delay loop for approximately 1 microsecond
-	for (volatile uint32_t i = 0; i < 2; ++i) {
-		__NOP(); // No Operation assembly instruction
 	}
 
-	//CLKOUT ON
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
 
-	//SEL OFF
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
-
-	// Delay loop for approximately 1 microsecond
-	for (volatile uint32_t i = 0; i < 10; ++i) {
-		__NOP(); // No Operation assembly instruction
-	}
-
-	//CLKOUT OFF
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
-
-
+	execute_reset_seq();
 
 	if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5)){
 		current_angle_x += (current_decoder_val_M1 * 1.6666);
@@ -650,6 +685,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	else{
 		current_angle_y -= (current_decoder_val_M2 * 1.6666);
 	}
+
+	//homing
+	if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)){
+			is_limitSW_x = 1;
+	}
+
+	if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3)){
+			is_limitSW_y = 1;
+	}
+
 
 
 	pid_out_x = pidControl(desired_angle_x, &error_integral_x ,current_angle_x, &error_previous_x, raw_deriv_samples_x);
