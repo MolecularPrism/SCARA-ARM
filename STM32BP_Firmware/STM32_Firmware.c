@@ -35,10 +35,34 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define kp 19
-#define ki 0.8
-#define kd 0.5
-#define k 1.1
+//#define kp_x 25
+//#define ki_x 1
+//#define kd_x 0.6
+//#define k_x 3
+
+#define kp_x 25
+#define ki_x 1
+#define kd_x 0.4
+#define k_x 3
+
+#define kp_y 25
+#define ki_y 1
+#define kd_y 0.4
+#define k_y 3
+
+//#define kp_y 25
+//#define ki_y 1
+//#define kd_y 0.6
+//#define k_y 3
+
+
+
+#define stepperUnit 1.6666
+
+//#define kp 19
+//#define ki 0.8
+//#define kd 0.5
+//#define k 1.1
 
 
 /* USER CODE END PD */
@@ -72,8 +96,28 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN 0 */
 
 //Preset Shape Coordinates
-const float square_y[4] = {0,0,10,10}; //{0,0},{10,0},{10,10},{0,10}
-const float square_x[4] = {0,10,10,0};
+int N = 1;
+const float star_y[13] = {-10 * stepperUnit,-5* stepperUnit,-5* stepperUnit,0,5* stepperUnit,5* stepperUnit,10* stepperUnit,5* stepperUnit,5* stepperUnit,0,-5* stepperUnit,-5* stepperUnit,-10* stepperUnit}; //star
+const float star_x[13] = {0,5* stepperUnit,10* stepperUnit,5* stepperUnit,10* stepperUnit,5* stepperUnit,0,-5* stepperUnit,-10* stepperUnit,-5* stepperUnit, -10* stepperUnit, -5* stepperUnit,0};
+
+const float square_y[7] = {0, stepperUnit * -10, stepperUnit * -10, 0, stepperUnit * 10, stepperUnit * 10, 0}; //square
+const float square_x[7] = {stepperUnit * -10, stepperUnit * -10, stepperUnit * 10, stepperUnit * 10, stepperUnit* 10, stepperUnit * -10, stepperUnit * -10};
+
+const float diamond_y[5] = {0,-15,0,15, 0}; //diamond
+const float diamond_x[5] = {0,15,30,15, 0};
+
+const float C_six_x[31] = {-1* stepperUnit* 2, -2* stepperUnit* 2, -3* stepperUnit* 2, -3* stepperUnit* 2, -2* stepperUnit* 2, -1* stepperUnit* 2, 0, 2* stepperUnit* 2, 5* stepperUnit* 2, 3* stepperUnit* 2, 4* stepperUnit* 2, 5* stepperUnit* 2, 6* stepperUnit* 2, 4* stepperUnit* 2, 2* stepperUnit* 2, 5* stepperUnit* 2, 2* stepperUnit * 2, 4* stepperUnit* 2, 6* stepperUnit* 2, 5* stepperUnit* 2, 4* stepperUnit* 2, 3* stepperUnit* 2, 5* stepperUnit* 2, 2* stepperUnit* 2, 0* stepperUnit* 2, -1* stepperUnit* 2, -2* stepperUnit* 2, -3* stepperUnit* 2, -3* stepperUnit * 2, -2* stepperUnit * 2, -1* stepperUnit * 2}; //C6
+const float C_six_y[31] = {-6* stepperUnit* 2, -5* stepperUnit* 2, -4* stepperUnit* 2, 1* stepperUnit* 2, 4* stepperUnit* 2, 3* stepperUnit* 2, 2* stepperUnit* 2, 1* stepperUnit* 2, -5* stepperUnit* 2, 2* stepperUnit* 2, 3* stepperUnit* 2, 2* stepperUnit* 2, 1* stepperUnit* 2, 0, 1* stepperUnit* 2, -5* stepperUnit* 2, 1* stepperUnit* 2, 0, 1*stepperUnit* 2, 2* stepperUnit* 2, 3* stepperUnit* 2, 2* stepperUnit* 2, -5* stepperUnit* 2, 1* stepperUnit* 2, 2* stepperUnit* 2, 3* stepperUnit* 2, 4* stepperUnit* 2, 1* stepperUnit* 2, -4* stepperUnit* 2, -5* stepperUnit* 2, -6* stepperUnit* 2};
+
+
+//const float square_y[1] = {-25}; //test
+//const float square_x[1] = {25};
+
+//const float square_y[] = {-9,-9,-3, 3, 9, 9, 3, -3, -9};
+//const float square_x[] = {};
+
+//const float square_y[N] = {0};
+//const float square_x[N] = {0};
 
 // PID Control Vars
 volatile float CF = 2000, deltaTime = 0, error_previous_x = 0, error_previous_y = 0, error_integral_x = 0, error_integral_y = 0, pid_out_x = 0, pid_out_y = 0;
@@ -98,12 +142,31 @@ const float WSF_CONST_LOOKUP_TABLE[10] = { 0.36307, 0.2327935, 0.149263, 0.09570
 
 //Homing Vars
 volatile int is_limitSW_x = 0, is_limitSW_y = 0;
+volatile int is_homing_x = 0;
+volatile int is_homing_y = 0;
+volatile int is_zeroing_x = 0;
+volatile int is_zeroing_y = 0;
+volatile int is_zeroed_x = 0;
+volatile int is_zeroed_y = 0;
+
+//Motor Stop Vars
+volatile int is_stop_requested = 0;
+volatile int is_SW_on = 0;
 
 //test var
-char* data = "hello\n";
-int test = 0;
-volatile float max_angle = 0.0;
+volatile int test1 = 0;
+volatile int test2 = 0;
+volatile float max_angle_x = 0.0;
+volatile float max_angle_y = 0.0;
+volatile float min_angle_x = 0.0;
+volatile float min_angle_y = 0.0;
 volatile float current_angle_test = 0;
+
+
+
+GPIO_PinState bit0_two = 0;
+
+
 
 //prototype
 void limit_switch_trigger();
@@ -125,7 +188,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -178,6 +242,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	//limit_switch_trigger();
+
 
 
 
@@ -423,12 +488,19 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PC15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA3 PA4 PA5 PA6
                            PA7 PA15 */
@@ -439,9 +511,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB0 PB1 PB2 PB3
-                           PB4 PB5 */
+                           PB4 PB5 PB9 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
-                          |GPIO_PIN_4|GPIO_PIN_5;
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -475,7 +547,7 @@ void readDecoder(){
 	GPIO_PinState bit3_two = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7);
 	GPIO_PinState bit2_two = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0);
 	GPIO_PinState bit1_two = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1);
-	GPIO_PinState bit0_two = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+	bit0_two = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
 
 	current_decoder_val_M1 = binaryToDecimal(bit3_one, bit2_one, bit1_one, bit0_one);
 	current_decoder_val_M2 = binaryToDecimal(bit3_two, bit2_two, bit1_two, bit0_two);
@@ -577,7 +649,7 @@ float FDD_WSF_PID(volatile float* raw_deriv_samples, float error_derivative) {
     return sum;
 }
 
-float pidControl(const float desired_angle, volatile float *error_integral, volatile float current_angle, volatile float *error_previous, volatile float* raw_derivative_samples) {
+float pidControl(const float desired_angle, volatile float *error_integral, volatile float current_angle, volatile float *error_previous, volatile float* raw_derivative_samples, int is_x) {
 
   deltaTime = 1.0/CF;
 
@@ -602,7 +674,13 @@ float pidControl(const float desired_angle, volatile float *error_integral, vola
   *error_previous = error;
 
   // control signal
-  return k * (kp * error + kd * filtered_error_derivative + ki * (*error_integral));
+
+  if(is_x){
+	  return k_x * (kp_x * error + kd_x * filtered_error_derivative + ki_x * (*error_integral));
+  }else{
+	  return k_y * (kp_y * error + kd_y * filtered_error_derivative + ki_y * (*error_integral));
+  }
+
 
 
 }
@@ -612,16 +690,24 @@ void setMotorSpeed() {
   int motor_speed_x = fabs(pid_out_x);
   int motor_speed_y = fabs(pid_out_y);
 
-  if (motor_speed_x > 255) {
-    motor_speed_x = 255;
+  if(is_stop_requested ){
+	  motor_speed_x = 0;
+	  motor_speed_y = 0;
+  }
+  else{
+	  if (motor_speed_x > 255) {
+	      motor_speed_x = 255;
+	  }
+
+	  if (motor_speed_y > 255){
+	  	  motor_speed_y = 255;
+	  }
   }
 
-  if (motor_speed_y > 255){
-	  motor_speed_y = 255;
-  }
+
 
   // Get motor direction
-  if (pid_out_x > 0) {  // motor needs to move clockwise
+  if (pid_out_x > 0) {
 	  TIM1 -> CCR1 = 0;
 	  TIM1 -> CCR2 = motor_speed_x;
   } else {
@@ -629,7 +715,7 @@ void setMotorSpeed() {
 	  TIM1 -> CCR1 = motor_speed_x;
   }
 
-  if (pid_out_y > 0) {  // motor needs to move clockwise
+  if (pid_out_y > 0) {
 	  TIM2 -> CCR1 = 0;
 	  TIM2 -> CCR2 = motor_speed_y;
     } else {
@@ -644,29 +730,133 @@ void convertAngleToXY() {
 
 	current_angle_test = current_angle_rad * M_PI/180;
 }
+
 int count = 0;
+
+int shape_count = 0;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
-	if(!is_limitSW_x && !is_limitSW_y){
-		desired_angle_x = square_x[count];
-		desired_angle_y = square_y[count];
+	if(shape_count == 0){ //square
+		N = 7;
 	}
-	else{
-		desired_angle_x = 0;
-		desired_angle_y = 0;
+	else if(shape_count == 1){ //diamond
+		N = 5;
+	}
+	else if(shape_count == 2){ //star
+		N = 13;
+	}
+	else if(shape_count == 3){ //C6
+			N = 31;
 	}
 
-	if(count > 3){
-		count = 0;
+
+
+	if(count > (N-1)){ //>3
+			count = 0;
+			//count = 0;
+		}
+
+	if(!is_limitSW_x && !is_homing_x){
+		if(!is_limitSW_y && !is_homing_y){
+
+			if(shape_count == 0){ //square
+				desired_angle_x = square_x[count];
+				desired_angle_y = square_y[count];
+			}
+			else if(shape_count == 1){ //diamond
+				desired_angle_x = diamond_x[count];
+				desired_angle_y = diamond_y[count];
+			}
+			else if(shape_count == 2){ //star
+				desired_angle_x = star_x[count];
+				desired_angle_y = star_y[count];
+			}
+			else if(shape_count == 3){ //star
+				desired_angle_x = C_six_x[count];
+				desired_angle_y = C_six_y[count];
+			}
+
+		}
+
 	}
 
 
-	if(fabs(desired_angle_y - current_angle_y) < 0.5){
-		if(fabs(desired_angle_x - current_angle_x) < 0.5){
+
+
+//	else{
+//		desired_angle_x = 0;
+//		desired_angle_y = 0;
+//	}
+
+
+	if(fabs(desired_angle_y - current_angle_y) < 0.1){
+		if(fabs(desired_angle_x - current_angle_x) < 0.1){
 			count++;
 		}
 
+	}
+
+	test1 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_15);
+	test2 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
+
+//	if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)) { //estop
+//		is_SW_on = 1;
+//
+//
+//		desired_angle_x = 0;
+//		if(fabs(desired_angle_x - current_angle_x) < 0.1){
+//			is_at_zero_x = 1;
+//		}
+//
+//	}else{
+//
+//
+//		is_homing_x = 1;
+//		is_zeroing_x = 0;
+//		is_zeroing_y = 0;
+//
+//
+//	}
+//
+//	if(is_at_zero_x){
+//		desired_angle_y = 10 * stepperUnit;
+//
+//	}
+
+	//if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_15)) { //motor-off & home switch
+	//if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){ //e-stop to stop motors and point laser down
+
+	if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){ //e-stop
+		if(is_stop_requested){
+
+
+
+			is_homing_x = 1;
+
+
+			is_zeroing_x = 0;
+			is_zeroing_y = 0;
+
+			shape_count++;
+
+			if(shape_count > 3){
+				shape_count = 0;
+			}
+		}
+
+		is_stop_requested = 0;
+
+	}else{
+		is_stop_requested = 1;
+
+//		if(!is_stop_requested){
+//			shape_count++;
+//
+//			if(shape_count > 2){
+//				shape_count = 0;
+//			}
+//		}
 	}
 
 
@@ -686,7 +876,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		current_angle_y -= (current_decoder_val_M2 * 1.6666);
 	}
 
+
 	//homing
+	if(is_homing_x){
+		desired_angle_x += 0.04;
+	}
+
+	if(is_homing_y){
+		desired_angle_y += 0.21;
+	}
+
 	if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)){
 			is_limitSW_x = 1;
 	}
@@ -695,10 +894,50 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			is_limitSW_y = 1;
 	}
 
+	if(is_limitSW_x){
+		if(!is_zeroing_x){
+			current_angle_x = 42 * stepperUnit;
+		}
+
+		is_zeroing_x = 1;
+		desired_angle_x = 0;
+		is_homing_x = 0;
 
 
-	pid_out_x = pidControl(desired_angle_x, &error_integral_x ,current_angle_x, &error_previous_x, raw_deriv_samples_x);
-	pid_out_y = pidControl(desired_angle_y, &error_integral_y, current_angle_y, &error_previous_y, raw_deriv_samples_y);
+		if(fabs(desired_angle_x - current_angle_x) < 0.1){
+			current_angle_x = 0;
+			is_limitSW_x = 0;
+			is_homing_y = 1;
+			//is_zeroed_x = 1; //is this needed?
+
+		}
+	}
+
+	if(is_limitSW_y){
+			if(!is_zeroing_y){
+				current_angle_y = 46 * stepperUnit;
+			}
+
+			is_zeroing_y = 1;
+			desired_angle_y = 0;
+			is_homing_y = 0;
+
+
+			if(fabs(desired_angle_y - current_angle_y) < 0.1){
+				current_angle_y = 0;
+				is_limitSW_y = 0;
+
+				//is_SW_on = 0;
+
+				//is_zeroed_y = 1; //is this needed?
+
+			}
+		}
+
+
+
+	pid_out_x = pidControl(desired_angle_x, &error_integral_x ,current_angle_x, &error_previous_x, raw_deriv_samples_x, 1);
+	pid_out_y = pidControl(desired_angle_y, &error_integral_y, current_angle_y, &error_previous_y, raw_deriv_samples_y, 0);
 
 	setMotorSpeed();
 
